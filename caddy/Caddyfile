@@ -1,0 +1,26 @@
+:8000 {
+    log stdout
+    errors stdout
+
+    # for any of these paths, the claims in the jwt will be required, and passed
+    jwt /one 
+    jwt /two 
+    jwt /three
+
+    # proxy requests to the various microservices
+    proxy /one hello1 {
+      without /one
+    }
+    proxy /two hello2 { 
+      without /two
+    }
+    proxy /three hello3 {
+      without /three
+    }
+    proxy /auth auth { 
+      without /auth
+    }
+
+    # serve the static files in the /web directory
+    root /web
+}

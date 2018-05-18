@@ -1,0 +1,71 @@
+version: '2'
+services:
+  db:
+    container_name: db
+    image: postgres
+    environment:
+      POSTGRES_USER: tester
+      POSTGRES_DB: rpapoc
+
+  hello1:
+    container_name: hello1
+    environment:
+      LISTEN_PORT: 80
+      SERVICE_NAME: HelloOne
+      DB_HOST: db
+    build: ./hello/
+    restart: on-failure
+    depends_on:
+      - db
+
+  hello2:
+    container_name: hello2
+    environment:
+      LISTEN_PORT: 80
+      SERVICE_NAME: HelloTwo
+      DB_HOST: db
+    build: ./hello/
+    restart: on-failure
+    depends_on:
+      - db
+
+  hello3:
+    container_name: hello3
+    environment:
+      LISTEN_PORT: 80
+      SERVICE_NAME: THREE
+      DB_HOST: db
+    build: ./hello/
+    restart: on-failure
+    depends_on:
+      - db
+  
+  auth:
+    container_name: auth
+    environment:
+      JWT_SECRET: thesecrethastobethesameforbothauthandcaddy
+      LISTEN_PORT: 80
+      DB_HOST: db
+    build: ./auth/
+    restart: on-failure
+    depends_on:
+      - db
+
+  caddy:
+    container_name: caddy
+    build: ./caddy/
+    environment:
+      JWT_SECRET: thesecrethastobethesameforbothauthandcaddy
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    volumes:
+      - "./caddy/Caddyfile:/etc/Caddyfile"
+      - "./webapp/dist:/web"
+      - "./caddy/rootCaddy:/root/.caddy"
+    depends_on:
+      - db
+      - hello1
+      - hello2
+      - hello3
+      - auth
